@@ -1,0 +1,162 @@
+{%load management_tags %}
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Management Dashboard</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+<link href="https://fonts.googleapis.com/css2?family=Nunito:ital,wght@0,200;0,300;0,400;0,600;0,700;0,800;0,900;1,200;1,300;1,400;1,600;1,700;1,800;1,900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'projectmanagement/assets/css/icons.css' %}">
+    <link rel="stylesheet" href="{% static 'projectmanagement/assets/css/style.css' %}">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.2.1/dist/chart.min.js"></script>
+</head>
+<body>
+    <div class="dashboard"><!-- Dashboard -->
+        <section class="navigation"><!-- Navigation -->
+            <img src="{% static 'projectmanagement/assets/img/logo-thumbnail.png' %}" alt="InstinctHub Logo" class="logo">
+
+            <div>
+                <span class="material-icons-outlined"> dashboard </span>
+                <span class="material-icons-outlined"> trending_up </span>
+                <span class="material-icons-outlined"> people_alt </span>
+                <span class="material-icons-outlined"> insert_invitation </span>
+                <span class="material-icons-outlined">settings_suggest</span>
+            </div>
+
+            <img src="{% static 'projectmanagement/assets/img/2.jpg' %} " alt="User Image" class="user">
+
+        </section><!-- Navigation End -->
+
+        <section class="main"><!-- Main -->
+            <div class="search"><!-- Search -->
+                <form action="">
+                    <input type="text" name="search" id="searchProject" placeholder="Search Here">
+                    <span class="material-icons-outlined"> search </span>
+                </form>
+
+                <div class="notification">
+                    <span class="material-icons-outlined"> notifications </span>
+                    <span class="material-icons-outlined"> edit </span>
+                </div>
+            </div><!-- Search End -->
+
+            <div class="title">
+                <h1>My Project</h1>
+
+                <label for="projects">Sort By</label>
+                <select name="projects" id="projectFilter">
+                    <option value="">...</option>
+                    <option value="completed">Completed Project</option>
+                    <option value="ongoing">Ongoing Project</option>
+                    <option value="stalled">Stalled Project</option>
+                </select>
+
+            </div>
+
+            <div class="project_list"><!-- Project List -->
+
+                {% for project in projects %}
+                <div class="project" data-status="{{project.status|change_status}}" title="{{project.title}}"><!-- Project1 -->
+                    <div class="category category_color{{project.status|color}}"></div>
+                    <h2>{{project.title}}</h2>
+                    <p>Last Seen {{project.active}}</p>
+                    
+                    
+                    <ul class="activity">
+                        {% for items in project.task_set.all %}
+                        <li>{{items}}</li>
+                        {% endfor %}
+                    </ul>
+                    
+
+                    <div class="meta">
+                        <div class="contributors">
+                            <img src="{{project.first_contributor.url}}" alt="">
+                            <img src="{{project.second_contributor.url}}" alt="" class="stack">
+                            <img src="{{project.third_contributor.url}}" alt="" class="stack">
+                        </div>
+                        <span class="material-icons-outlined">more_vert</span>
+                    </div>
+                </div><!-- Project1 End -->
+                {% endfor %}
+
+            </div><!-- Project List End -->
+
+        </section><!-- Main End -->
+
+        <section class="secondary"><!-- Secondary -->
+            <div class="chart">
+                <h2>Total Project</h2>
+                <canvas id="myChart" width="400" height="400"></canvas>
+
+                <div class="complete">
+                    <h3>{{completed|length}} Completed</h3>
+                    <p>from {{projects|length}} projects</p>
+                </div>
+            </div>
+
+            
+        </section><!-- Secondary End -->
+
+    </div><!-- Dashboard End-->
+    
+    <script>
+        // Chart JS
+var ctx = document.getElementById('myChart').getContext('2d');
+var myChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+        labels: [
+            'Completed',
+            'Ongoing',
+            'Stalled'
+        ],
+        datasets: [{
+            label: 'My First Dataset',
+            data: ["{{completed|length}}", "{{ongoing|length}}", "{{stalled|length}}"],
+            backgroundColor: [
+            'rgb(255, 99, 132)',
+            'rgb(54, 162, 235)',
+            'rgb(255, 205, 86)'
+            ],
+            hoverOffset: 4
+        }]
+    },
+});
+
+
+// Search Project
+const project = document.querySelectorAll('.project')
+
+const displayProject = (values) =>{
+    project.forEach(element =>{
+        element.style.display = "none"
+        const title = element.querySelector('h2').innerHTML.toUpperCase();
+        const status = element.dataset.status.toUpperCase();
+        const recent = element.querySelector('p').innerHTML.toUpperCase();
+
+        if (title.includes(values)){
+            element.style.display = "block"
+        }
+        else if(values != 'RECENT' && status.includes(values)){
+            element.style.display = "block"
+        }
+    })
+}
+
+searchProject.addEventListener('input', (e) =>{
+    displayProject(e.target.value.toUpperCase())
+})
+
+projectFilter.addEventListener('input', (e) =>{
+    displayProject(e.target.value.toUpperCase())
+})
+    </script> 
+</body>
+</html>
